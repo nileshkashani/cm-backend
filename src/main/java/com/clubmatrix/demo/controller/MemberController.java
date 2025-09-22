@@ -42,11 +42,16 @@ public class MemberController {
 	}
 
 	@GetMapping("/email")
-	public ResponseEntity<?> getMemberByEmail(@RequestParam String email) {
+	public ResponseEntity<?> getMemberByEmail(@RequestParam(required = false) String email) {
+		if (email == null || email.isEmpty()) {
+			return ResponseEntity.badRequest().body(Map.of(
+					"success", false,
+					"message", "Missing required request parameter 'email'"));
+		}
 		System.out.println(email);
 		try {
 			List<Member> member = memberRepository.findByEmail(email); // Use local variable, not class field
-			if (member == null) {
+			if (member == null || member.isEmpty()) {
 				return ResponseEntity.status(404).body(Map.of(
 						"success", false,
 						"message", "failed to find member with this email!"));
