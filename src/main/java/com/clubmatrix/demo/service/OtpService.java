@@ -1,58 +1,46 @@
 package com.clubmatrix.demo.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.stereotype.Service;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
-import com.twilio.Twilio;
-import com.twilio.rest.api.v2010.account.Message;
-import com.twilio.type.PhoneNumber;
-
 @Service
 public class OtpService {
 
+    @Autowired
+    private JavaMailSender mailSender;
+
+    // Note: For production, use a persistent store like Redis or a database table.
     private final Map<String, String> otpStorage = new HashMap<>();
 
-    @Value("${twilio.accountSid}")
-    private String twilioSid;
-
-    @Value("${twilio.authToken}")
-    private String twilioAuthToken;
-
-    @Value("${twilio.phoneNumber}")
-    private String twilioPhoneNumber;
-
-    private String normalizeKey(String key) {
-        return key.trim().toLowerCase();
-    }
-
-    private String normalizePhoneNumber(String phone) {
-        phone = phone.replaceAll("[^\\d]", "");
-        if (!phone.startsWith("+")) {
-            phone = "+91" + phone; // default India, change if needed
-        }
-        return phone;
-    }
-
+    /**
+     * Generates a 6-digit OTP.
+     */
     private String generateOtp() {
         return String.valueOf(100000 + new Random().nextInt(900000));
     }
 
-    public boolean sendSmsOtp(String phone) {
+    /**
+     * Sends an OTP to the specified email address.
+     * This method now matches the one called by your controller.
+     */
+    public boolean sendOtp(String email) {
         String otp = generateOtp();
-        String normalizedPhone = normalizePhoneNumber(phone);
-        otpStorage.put(normalizeKey(normalizedPhone), otp);
+        String normalizedEmail = email.trim().toLowerCase();
+        otpStorage.put(normalizedEmail, otp);
 
         try {
-            Twilio.init(twilioSid, twilioAuthToken);
-            Message.creator(
-                    new PhoneNumber(normalizedPhone),
-                    new PhoneNumber(twilioPhoneNumber),
-                    "Your OTP is: " + otp
-            ).create();
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom("youremail@gmail.com"); // The email you configured
+            message.setTo(email);
+            message.setSubject("Your OTP Code");
+            message.setText("Your OTP code is: " + otp);
+            mailSender.send(message);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -60,9 +48,18 @@ public class OtpService {
         }
     }
 
-    public boolean verifyOtp(String phone, String otp) {
-        String normalizedPhone = normalizeKey(normalizePhoneNumber(phone));
-        String storedOtp = otpStorage.get(normalizedPhone);
-        return storedOtp != null && storedOtp.equals(otp);
+    /**
+     * Verifies the provided OTP for the given email.
+     */
+    public boolean verifyOtp(String email, String otp) {
+        String normalizedEmail = email.trim().toLowerCase();
+        String storedOtp = otpStorage.get(normalizedEmail);
+        
+        // Important: After successful verification, remove the OTP to prevent reuse.
+        if (storedOtp != null && storedOtp.equals(otp)) {
+            otpStorage.remove(normalizedEmail);
+            return true;
+        }
+        return false;
     }
 }
