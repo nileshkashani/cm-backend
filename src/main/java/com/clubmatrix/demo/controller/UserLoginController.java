@@ -102,3 +102,4 @@ public ResponseEntity<?> userLogin(@RequestBody Map<String, String> request) {
         return ResponseEntity.status(500).body(Map.of("success", false, "message", "Error: " + e.getMessage()));
     }
 }
+}
