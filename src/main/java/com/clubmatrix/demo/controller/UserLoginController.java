@@ -73,28 +73,32 @@ public class UserLoginController {
 	}
 
 	@PostMapping("/password")
-	public ResponseEntity<?> userLogin(@RequestBody Map<String, String> request) {
-		try {
+public ResponseEntity<?> userLogin(@RequestBody Map<String, String> request) {
+    try {
+        String email = request.get("email");
+        String password = request.get("password");
 
-			String email = request.get("email");
-			String password = request.get("password");
+        if (email == null || email.isBlank() || password == null || password.isBlank()) {
+            return ResponseEntity.status(400)
+                            .body(Map.of("success", false, "message", "Email and password required!"));
+        }
 
-			if (email == null || email.isBlank() || password == null || password.isBlank()) {
-				return ResponseEntity.status(400)
-						.body(Map.of("success", false, "message", "email and password required!"));
-			}
+        UserLogin user = userLoginRepository.findByEmail(email);
+        if (user == null) {
+            return ResponseEntity.status(404) // Use 404 Not Found for non-existent users
+                            .body(Map.of("success", false, "message", "User not registered, please register first!"));
+        }
 
-			UserLogin user = userLoginRepository.findByEmail(email);
-			if (user == null) {
-				return ResponseEntity.status(400)
-						.body(Map.of("success", false, "message", "User not registered, please register first!"));
-			}
+        // --- THIS IS THE CRITICAL PASSWORD CHECK ---
+        if (!user.getPassword().equals(password)) {
+            return ResponseEntity.status(401) // Use 401 Unauthorized for bad credentials
+                            .body(Map.of("success", false, "message", "Invalid email or password!"));
+        }
+        // -----------------------------------------
 
-			return ResponseEntity
-					.ok(Map.of("success", true, "message", "User logged in successfully!", "user", user));
-		} catch (Exception e) {
-			return ResponseEntity.status(500).body(Map.of("success", false, "message", "Error: " + e.getMessage()));
-		}
-	}
-
+        return ResponseEntity
+                        .ok(Map.of("success", true, "message", "User logged in successfully!", "user", user));
+    } catch (Exception e) {
+        return ResponseEntity.status(500).body(Map.of("success", false, "message", "Error: " + e.getMessage()));
+    }
 }
