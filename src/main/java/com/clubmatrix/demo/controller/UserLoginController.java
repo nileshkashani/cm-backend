@@ -28,11 +28,11 @@ public class UserLoginController {
 
 	@PostMapping("/send/otp")
 	public ResponseEntity<?> sendOtp(@RequestBody Map<String, String> request) {
-		String email = request.get("email");
-		if (email == null || email.isBlank()) {
-			return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Email is required!"));
+		String phone = request.get("phone");
+		if (phone == null || phone.isBlank()) {
+			return ResponseEntity.badRequest().body(Map.of("success", false, "message", "phone is required!"));
 		}
-		boolean sent = otpService.sendOtp(email);
+		boolean sent = otpService.sendOtp(phone);
 		return sent ? ResponseEntity.ok(Map.of("success", true, "message", "otp sent successfully!"))
 				: ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 						.body(Map.of("success", false, "message", "Error sending otp!"));
