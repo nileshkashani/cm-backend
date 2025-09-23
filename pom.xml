@@ -51,6 +51,12 @@
         <scope>runtime</scope>
     </dependency>
 
+	  <dependency>
+            <groupId>com.twilio.sdk</groupId>
+            <artifactId>twilio</artifactId>
+            <version>9.0.0</version>
+        </dependency>
+
     <!-- Lombok (must not be optional) -->
     <dependency>
         <groupId>org.projectlombok</groupId>
