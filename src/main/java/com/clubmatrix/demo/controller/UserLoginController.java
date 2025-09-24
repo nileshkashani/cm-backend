@@ -47,8 +47,15 @@ public class UserLoginController {
 			return ResponseEntity.badRequest().body(Map.of("success", false, "message", "OTP is required!"));
 		}
 
+		UserLogin user = userLoginRepository.findByPhone(phone);
+		if (user == null) {
+            return ResponseEntity.status(404) // Use 404 Not Found for non-existent users
+                            .body(Map.of("success", false, "message", "User not registered, please register first!"));
+		}
+
 		boolean verified = otpService.verifyOtp(phone, otp);
-		return verified ? ResponseEntity.ok(Map.of("success", true, "message", "otp verified successfully"))
+
+		return verified ? ResponseEntity.ok(Map.of("success", true, "message", "otp verified successfully" "user", user))
 				: ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 						.body(Map.of("success", false, "message", "Invalid otp!"));
 	}
