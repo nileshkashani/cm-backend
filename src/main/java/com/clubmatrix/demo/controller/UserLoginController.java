@@ -28,11 +28,11 @@ public class UserLoginController {
 
 	@PostMapping("/send/otp")
 	public ResponseEntity<?> sendOtp(@RequestBody Map<String, String> request) {
-		String phone = request.get("phone");
-		if (phone == null || phone.isBlank()) {
-			return ResponseEntity.badRequest().body(Map.of("success", false, "message", "phone is required!"));
+		String phoneNo = request.get("phoneNo");
+		if (phoneNo == null || phoneNo.isBlank()) {
+			return ResponseEntity.badRequest().body(Map.of("success", false, "message", "phoneNo is required!"));
 		}
-		boolean sent = otpService.sendOtp(phone);
+		boolean sent = otpService.sendOtp(phoneNo);
 		return sent ? ResponseEntity.ok(Map.of("success", true, "message", "otp sent successfully!"))
 				: ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 						.body(Map.of("success", false, "message", "Error sending otp!"));
@@ -40,20 +40,20 @@ public class UserLoginController {
 
 	@PostMapping("/verify/otp")
 	public ResponseEntity<?> verifyOtp(@RequestBody Map<String, String> request) {
-		String phone = request.get("phone");
+		String phoneNo = request.get("phoneNo");
 		String otp = request.get("otp");
 
-		if (phone == null || phone.isBlank() || otp == null || otp.isBlank()) {
+		if (phoneNo == null || phoneNo.isBlank() || otp == null || otp.isBlank()) {
 			return ResponseEntity.badRequest().body(Map.of("success", false, "message", "OTP is required!"));
 		}
 
-		UserLogin user = userLoginRepository.findByPhoneNo(phone);
+		UserLogin user = userLoginRepository.findByPhoneNo(phoneNo);
 		if (user == null) {
             return ResponseEntity.status(404) // Use 404 Not Found for non-existent users
                             .body(Map.of("success", false, "message", "User not registered, please register first!"));
 		}
 
-		boolean verified = otpService.verifyOtp(phone, otp);
+		boolean verified = otpService.verifyOtp(phoneNo, otp);
 
 		return verified ? ResponseEntity.ok(Map.of("success", true, "message", "otp verified successfully", "user", user))
 				: ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -61,14 +61,14 @@ public class UserLoginController {
 	}
 	@PostMapping("/verify/otp/for/register")
 	public ResponseEntity<?> verifyOtpForRegister(@RequestBody Map<String, String> request) {
-		String phone = request.get("phone");
+		String phoneNo = request.get("phoneNo");
 		String otp = request.get("otp");
 
-		if (phone == null || phone.isBlank() || otp == null || otp.isBlank()) {
+		if (phoneNo == null || phoneNo.isBlank() || otp == null || otp.isBlank()) {
 			return ResponseEntity.badRequest().body(Map.of("success", false, "message", "OTP is required!"));
 		}
 
-		boolean verified = otpService.verifyOtp(phone, otp);
+		boolean verified = otpService.verifyOtp(phoneNo, otp);
 
 		return verified ? ResponseEntity.ok(Map.of("success", true, "message", "otp verified successfully" ))
 				: ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
