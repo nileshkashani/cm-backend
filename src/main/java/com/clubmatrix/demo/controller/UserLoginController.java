@@ -55,7 +55,22 @@ public class UserLoginController {
 
 		boolean verified = otpService.verifyOtp(phone, otp);
 
-		return verified ? ResponseEntity.ok(Map.of("success", true, "message", "otp verified successfully" "user", user))
+		return verified ? ResponseEntity.ok(Map.of("success", true, "message", "otp verified successfully", "user", user))
+				: ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+						.body(Map.of("success", false, "message", "Invalid otp!"));
+	}
+	@PostMapping("/verify/otp/for/register")
+	public ResponseEntity<?> verifyOtpForRegister(@RequestBody Map<String, String> request) {
+		String phone = request.get("phone");
+		String otp = request.get("otp");
+
+		if (phone == null || phone.isBlank() || otp == null || otp.isBlank()) {
+			return ResponseEntity.badRequest().body(Map.of("success", false, "message", "OTP is required!"));
+		}
+
+		boolean verified = otpService.verifyOtp(phone, otp);
+
+		return verified ? ResponseEntity.ok(Map.of("success", true, "message", "otp verified successfully" ))
 				: ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 						.body(Map.of("success", false, "message", "Invalid otp!"));
 	}
