@@ -47,7 +47,7 @@ public class UserLoginController {
 			return ResponseEntity.badRequest().body(Map.of("success", false, "message", "OTP is required!"));
 		}
 
-		UserLogin user = userLoginRepository.findByPhone(phone);
+		UserLogin user = userLoginRepository.findByPhoneNo(phone);
 		if (user == null) {
             return ResponseEntity.status(404) // Use 404 Not Found for non-existent users
                             .body(Map.of("success", false, "message", "User not registered, please register first!"));
